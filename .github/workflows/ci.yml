@@ -1,0 +1,44 @@
+name: Lint & Test
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv pip install --system ruff
+      - run: ruff check .
+
+  test-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv pip install --system -r requirements.txt
+      - run: pytest tests/test_unit.py -v --tb=short --cov=models --cov=services --cov=config --cov-report=term
+
+  test-all:
+    if: ${{ vars.MONGO_URI != '' || secrets.MONGO_URI != '' }}
+    runs-on: ubuntu-latest
+    env:
+      MONGO_URI: ${{ secrets.MONGO_URI || vars.MONGO_URI }}
+      MONGO_DB_NAME: spp_fenrir_test
+      SECRET_KEY: ci-test-secret-key-12345
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv pip install --system -r requirements.txt
+      - run: cp .env.example .env
+      - run: pytest tests/ -v --tb=short --cov=. --cov-report=term

@@ -138,7 +138,7 @@ async def xendit_webhook():
     try:
         ok = await process_xendit_callback(payload)
         return {"status": "ok" if ok else "ignored"}
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return {"error": str(e)}, 400
 
 

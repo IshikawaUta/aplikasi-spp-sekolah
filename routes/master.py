@@ -368,5 +368,5 @@ async def import_siswa_action():
 
         result = {"imported": imported, "skipped": skipped, "errors": errors}
         return render_template("master/import-siswa.html.j2", active_page="import_siswa", result=result)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return render_template("master/import-siswa.html.j2", active_page="import_siswa", result={"error": f"Gagal membaca file: {e!s}"})

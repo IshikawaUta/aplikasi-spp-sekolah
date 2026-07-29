@@ -1,0 +1,31 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Fenrir
+*.log
+
+# Uploads / temp
+/tmp/
+*.xlsx
+!templates/*.xlsx
+
+# Distribution
+dist/
+build/
+*.egg-info/

@@ -20,6 +20,8 @@ jobs:
 
   test-unit:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,6 +33,7 @@ jobs:
   test-all:
     runs-on: ubuntu-latest
     env:
+      PYTHONPATH: .
       MONGO_URI: ${{ secrets.MONGO_URI }}
       MONGO_DB_NAME: spp_fenrir_test
       SECRET_KEY: ci-test-secret-key-12345

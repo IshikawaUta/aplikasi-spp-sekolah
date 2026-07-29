@@ -1,0 +1,156 @@
+{% extends "base.html.j2" %}
+{% block title %}Tagihan - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Transaksi / Tagihan{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Form -->
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <h3 class="font-black text-slate-900 mb-3">Buat Tagihan</h3>
+        <form method="get" action="/tagihan/" class="space-y-3">
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Kelas</label>
+                <select name="class_id" onchange="this.form.submit()" class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+                    <option value="">-- Filter Kelas --</option>
+                    {% for c in classes %}
+                    <option value="{{ c._id }}" {{ 'selected' if request.args.get('class_id') == str(c._id) else '' }}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+        <hr class="my-3">
+        <form method="post" action="/tagihan/" class="space-y-3">
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Siswa</label>
+                <select name="student_id" required class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+                    <option value="">-- Pilih Siswa --</option>
+                    {% for s in students %}
+                    <option value="{{ s._id }}">{{ s.name }} ({{ s.nis }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Komponen</label>
+                <select name="component_id" required class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+                    <option value="">-- Pilih Komponen --</option>
+                    {% for comp in components %}
+                    <option value="{{ comp._id }}">{{ comp.name }} (Rp {{ "{:,.0f}".format(comp.default_amount) }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Periode</label>
+                <select name="period_id" required class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+                    <option value="">-- Pilih Periode --</option>
+                    {% for p in periods %}
+                    <option value="{{ p._id }}">{{ p.name }} ({{ p.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Nominal</label>
+                <input type="number" name="total_amount" required
+                    class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Status</label>
+                <select name="status" class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+                    <option value="draft">Draft</option>
+                    <option value="posted">Posted</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full bg-primary-600 text-white py-2 rounded-xl text-sm font-medium">Simpan Tagihan</button>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="lg:col-span-2 glass rounded-[32px] overflow-hidden border border-white/60 shadow-sm">
+        <div class="p-4 border-b flex flex-wrap gap-2">
+            {% set class_param = '&class_id=' + request.args.get('class_id', '') if request.args.get('class_id') else '' %}
+            <a href="?{% if request.args.get('class_id') %}class_id={{ request.args.get('class_id') }}{% endif %}" class="text-sm px-3 py-1 rounded {{ 'bg-primary-100 text-primary-600' if not request.args.get('status') else 'bg-slate-100' }}">Semua</a>
+            <a href="?status=draft{{ class_param }}" class="text-sm px-3 py-1 rounded {{ 'bg-primary-100 text-primary-600' if request.args.get('status') == 'draft' else 'bg-slate-100' }}">Draft</a>
+            <a href="?status=posted{{ class_param }}" class="text-sm px-3 py-1 rounded {{ 'bg-primary-100 text-primary-600' if request.args.get('status') == 'posted' else 'bg-slate-100' }}">Posted</a>
+            <a href="?status=paid{{ class_param }}" class="text-sm px-3 py-1 rounded {{ 'bg-primary-100 text-primary-600' if request.args.get('status') == 'paid' else 'bg-slate-100' }}">Lunas</a>
+            <a href="?status=cancelled{{ class_param }}" class="text-sm px-3 py-1 rounded {{ 'bg-primary-100 text-primary-600' if request.args.get('status') == 'cancelled' else 'bg-slate-100' }}">Batal</a>
+        </div>
+        <div class="overflow-x-auto -mx-3 px-3">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-900/5 text-slate-500">
+                <tr>
+                    <th class="text-left px-4 py-3">Siswa</th>
+                    <th class="text-left px-4 py-3">Komponen</th>
+                    <th class="text-left px-4 py-3">Periode</th>
+                    <th class="text-right px-4 py-3">Nominal</th>
+                    <th class="text-right px-4 py-3">Terbayar</th>
+                    <th class="text-center px-4 py-3">Status</th>
+                    <th class="text-left px-4 py-3">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="px-4 py-3">{{ inv.student.name if inv.student else '-' }}</td>
+                    <td class="px-4 py-3">{{ inv.component.name if inv.component else '-' }}</td>
+                    <td class="px-4 py-3">{{ inv.period.name if inv.period else '-' }}</td>
+                    <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(inv.total_amount) }}</td>
+                    <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(inv.paid_amount) }}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="text-xs px-2 py-1 rounded-full
+                            {{ 'bg-amber-100 text-amber-700' if inv.status == 'draft' else '' }}
+                            {{ 'bg-primary-100 text-primary-600' if inv.status == 'posted' else '' }}
+                            {{ 'bg-emerald-100 text-emerald-700' if inv.status == 'paid' else '' }}
+                            {{ 'bg-slate-100 text-slate-500' if inv.status == 'cancelled' else '' }}">
+                            {{ inv.status }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex gap-1">
+                            {% if inv.status in ['draft', 'posted'] %}
+                            <form method="post" action="/tagihan/{{ inv._id }}/cancel"
+                                onsubmit="return confirm('Batalkan tagihan ini?')">
+                                <button class="text-red-600 text-xs hover:text-red-800">Batal</button>
+                            </form>
+                            {% endif %}
+                            {% if inv.status == 'paid' %}
+                            <button onclick="editPaidOff('{{ inv._id }}', '{{ inv.paid_off_at or '' }}')"
+                                class="text-blue-600 text-xs hover:text-blue-800">Tgl Lunas</button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not invoices %}
+                <tr><td colspan="7" class="text-center py-8 text-slate-400">Belum ada data tagihan</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+<div id="paidOffModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden overflow-y-auto">
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm w-full max-w-sm mx-4">
+        <h3 class="font-semibold text-lg mb-4">Edit Tanggal Lunas</h3>
+        <form method="post" id="paidOffForm" class="space-y-3">
+            <input type="datetime-local" name="paid_off_at" id="paidOffDate" required
+                class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" onclick="closePaidOffModal()" class="px-4 py-2 border rounded-xl text-sm">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editPaidOff(id, date) {
+    document.getElementById('paidOffForm').action = '/tagihan/' + id + '/paid-off';
+    document.getElementById('paidOffDate').value = date ? date.substring(0, 16) : '';
+    document.getElementById('paidOffModal').classList.remove('hidden');
+}
+function closePaidOffModal() {
+    document.getElementById('paidOffModal').classList.add('hidden');
+}
+</script>
+<script>lucide.createIcons();</script>
+{% endblock %}

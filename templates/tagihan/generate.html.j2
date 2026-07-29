@@ -1,0 +1,119 @@
+{% extends "base.html.j2" %}
+{% block title %}Generate Tagihan - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Transaksi / Generate Tagihan Massal{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <h3 class="font-black text-slate-900 mb-3">Generate Tagihan Massal</h3>
+        <form method="post" action="/tagihan/generate" class="space-y-3">
+            <input type="hidden" name="academic_year_id" value="{{ active_ay._id if active_ay else '' }}">
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Periode</label>
+                <select name="period_id" required class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+                    <option value="">-- Pilih Periode --</option>
+                    {% for p in periods %}
+                    <option value="{{ p._id }}">{{ p.name }} ({{ p.code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-2">Kelas</label>
+                <div class="space-y-2 border border-white/20 rounded-xl p-3 max-h-48 overflow-y-auto">
+                    {% for c in classes %}
+                    <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-white/50 px-2 py-1 rounded-lg transition">
+                        <input type="checkbox" name="class_ids" value="{{ c._id }}" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                        <span class="text-slate-700">{{ c.name }} ({{ c.jenjang }})</span>
+                    </label>
+                    {% endfor %}
+                    {% if not classes %}
+                    <p class="text-xs text-slate-400 px-2">Belum ada kelas</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-2">Komponen</label>
+                <div class="space-y-2 border border-white/20 rounded-xl p-3 max-h-48 overflow-y-auto">
+                    {% for comp in components %}
+                    <label class="flex items-center gap-2 text-sm cursor-pointer hover:bg-white/50 px-2 py-1 rounded-lg transition">
+                        <input type="checkbox" name="component_ids" value="{{ comp._id }}" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500">
+                        <span class="text-slate-700">{{ comp.name }} (Rp {{ "{:,.0f}".format(comp.default_amount) }})</span>
+                    </label>
+                    {% endfor %}
+                    {% if not components %}
+                    <p class="text-xs text-slate-400 px-2">Belum ada komponen aktif</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-2">
+                <button type="submit" name="action" value="preview"
+                    class="flex-1 bg-slate-100 text-gray-700 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 inline-flex items-center justify-center gap-1.5">
+                    <i data-lucide="eye" class="w-4 h-4"></i> Preview
+                </button>
+                <button type="submit" name="action" value="generate"
+                    class="flex-1 bg-primary-600 text-white py-2 rounded-xl text-sm font-medium hover:bg-slate-900 inline-flex items-center justify-center gap-1.5"
+                    onclick="return confirm('Generate tagihan? Tagihan yang sudah ada tidak akan diduplikasi.')">
+                    <i data-lucide="settings" class="w-4 h-4"></i> Generate
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="lg:col-span-2 glass rounded-[32px] overflow-hidden border border-white/60 shadow-sm">
+        <div class="p-4 border-b">
+            <h3 class="font-black text-slate-900">Preview Tagihan</h3>
+        </div>
+        {% if preview %}
+        <div class="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div class="bg-primary-50 rounded-xl p-3">
+                <p class="text-sm text-slate-500">Siswa</p>
+                <p class="text-2xl font-bold text-primary-600">{{ preview.total_students }}</p>
+            </div>
+            <div class="bg-green-50 rounded-xl p-3">
+                <p class="text-sm text-slate-500">Tagihan Baru</p>
+                <p class="text-2xl font-bold text-green-700">{{ preview.new_count }}</p>
+            </div>
+            <div class="bg-gray-50 rounded-xl p-3">
+                <p class="text-sm text-slate-500">Sudah Ada</p>
+                <p class="text-2xl font-bold text-gray-600">{{ preview.skip_count }}</p>
+            </div>
+        </div>
+        <div class="overflow-x-auto -mx-3 px-3">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-900/5 text-slate-500">
+                <tr>
+                    <th class="text-left px-4 py-3">Siswa</th>
+                    <th class="text-left px-4 py-3">Komponen</th>
+                    <th class="text-right px-4 py-3">Nominal</th>
+                    <th class="text-center px-4 py-3">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in preview.preview %}
+                <tr class="border-t {{ 'bg-green-50' if not row.exists else '' }}">
+                    <td class="px-4 py-3">{{ row.student.name }}</td>
+                    <td class="px-4 py-3">{{ row.component.name }}</td>
+                    <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(row.amount) }}</td>
+                    <td class="px-4 py-3 text-center">
+                        {% if row.exists %}
+                        <span class="text-xs text-slate-500">Sudah ada ({{ row.existing_status }})</span>
+                        {% else %}
+                        <span class="text-xs text-green-600 font-medium">Baru</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% elif request.args.get('generated') %}
+        <p class="p-8 text-center text-green-600">Berhasil generate {{ request.args.get('generated') }} tagihan baru{% if request.args.get('skipped')|int > 0 %} ({{ request.args.get('skipped') }} dilewati karena sudah ada){% endif %}</p>
+        {% elif error %}
+        <p class="p-4 text-center text-rose-600 bg-rose-50/80 rounded-xl mx-4 mt-4 text-sm font-semibold">{{ error }}</p>
+        {% else %}
+        <p class="p-8 text-center text-slate-400">Pilih periode, kelas, dan komponen lalu klik Preview</p>
+        {% endif %}
+    </div>
+</div>
+<script>lucide.createIcons();</script>
+{% endblock %}

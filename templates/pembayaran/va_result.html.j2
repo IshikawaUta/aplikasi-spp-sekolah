@@ -1,0 +1,66 @@
+{% extends "base.html.j2" %}
+{% block title %}Virtual Account Dibuat - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Virtual Account{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm text-center">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="check-circle" class="w-12 h-12 text-emerald-600"></i>
+        </div>
+        <h2 class="text-lg font-bold text-gray-800 mb-2">Virtual Account Berhasil Dibuat</h2>
+
+        <div class="bg-gray-50 rounded-xl p-4 mt-4 text-left space-y-2">
+            <div class="flex justify-between text-sm">
+                <span class="text-slate-500">Bank</span>
+                <span class="font-medium uppercase">{{ va.bank_code }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-slate-500">No. Virtual Account</span>
+                <span class="font-mono font-bold text-lg text-primary-600" id="vaNumber">
+                    {{ va.va_number }}
+                </span>
+            </div>
+            {% if va.bill_key %}
+            <div class="flex justify-between text-sm">
+                <span class="text-slate-500">Bill Key</span>
+                <span class="font-mono">{{ va.bill_key }}</span>
+            </div>
+            {% endif %}
+            {% if va.biller_code %}
+            <div class="flex justify-between text-sm">
+                <span class="text-slate-500">Biller Code</span>
+                <span class="font-mono">{{ va.biller_code }}</span>
+            </div>
+            {% endif %}
+            <div class="flex justify-between text-sm">
+                <span class="text-slate-500">Nominal</span>
+                <span class="font-bold">Rp {{ "{:,.0f}".format(va.amount) }}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-slate-500">Kadaluarsa</span>
+                <span class="text-red-600">{{ va.expires_at.strftime('%d/%m/%Y %H:%M') if va.expires_at else '-' }}</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-2 mt-4">
+            <button onclick="copyVA()" class="flex-1 bg-primary-600 text-white py-2 rounded-xl text-sm hover:bg-slate-900">
+                <i data-lucide="copy" class="w-4 h-4 inline-block mr-1"></i> Salin VA
+            </button>
+            <a href="/pembayaran/virtual-akun" class="flex-1 bg-slate-100 text-slate-600 py-2 rounded-xl text-sm hover:bg-gray-200 text-center">
+                Kembali
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyVA() {
+    var va = document.getElementById('vaNumber').textContent.trim();
+    navigator.clipboard.writeText(va).then(function() {
+        showToast('Nomor VA disalin!', 'success');
+    });
+}
+</script>
+<script>lucide.createIcons();</script>
+{% endblock %}

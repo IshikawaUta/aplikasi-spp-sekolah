@@ -1,0 +1,81 @@
+{% extends "base.html.j2" %}
+{% block title %}Tunggakan - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Laporan / Tunggakan{% endblock %}
+
+{% block content %}
+<div class="flex gap-2 mb-4">
+    <a href="/laporan/export/tunggakan?{{ request.query_string }}" class="bg-emerald-600 text-white px-3 py-1.5 rounded-xl text-xs font-bold inline-flex items-center gap-1 hover:bg-emerald-700 transition">
+        <i data-lucide="download" class="w-3 h-3"></i> Export Excel
+    </a>
+</div>
+<div class="flex flex-wrap gap-2 mb-4">
+    <form method="get" action="/laporan/tunggakan" class="flex flex-wrap gap-2">
+        <select name="class_id" class="w-full sm:w-auto px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <option value="">Semua Kelas</option>
+            {% for c in classes %}
+            <option value="{{ c._id }}" {{ 'selected' if request.args.get('class_id') == str(c._id) else '' }}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="number" name="angkatan" placeholder="Angkatan" value="{{ request.args.get('angkatan', '') }}"
+            class="w-full sm:w-24 px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+        <select name="component_id" class="w-full sm:w-auto px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <option value="">Semua Komponen</option>
+            {% for comp in components %}
+            <option value="{{ comp._id }}" {{ 'selected' if request.args.get('component_id') == str(comp._id) else '' }}>{{ comp.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="bg-primary-600 text-white px-3 py-1.5 rounded-xl text-xs">Filter</button>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <p class="text-xs text-slate-500">Siswa Menunggak</p>
+        <p class="text-2xl font-bold text-red-600">{{ student_count }}</p>
+    </div>
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <p class="text-xs text-slate-500">Total Tunggakan</p>
+        <p class="text-2xl font-bold text-red-600">Rp {{ "{:,.0f}".format(total_outstanding) }}</p>
+    </div>
+</div>
+
+<div class="glass rounded-[32px] overflow-hidden border border-white/60 shadow-sm">
+    <div class="overflow-x-auto -mx-3 px-3">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-900/5 text-slate-500">
+            <tr>
+                <th class="text-left px-4 py-3">Siswa</th>
+                <th class="text-left px-4 py-3">NIS</th>
+                <th class="text-left px-4 py-3">Komponen</th>
+                <th class="text-right px-4 py-3">Tagihan</th>
+                <th class="text-right px-4 py-3">Terbayar</th>
+                <th class="text-right px-4 py-3">Tunggakan</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in report_data %}
+            {% set first = True %}
+            {% for inv in d.details %}
+            <tr class="border-t hover:bg-gray-50 {{ 'bg-yellow-50' if first else '' }}">
+                <td class="px-4 py-3">
+                    {% if first %}
+                    <span class="font-medium">{{ d.student.name if d.student else '-' }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 py-3">{% if first %}{{ d.student.nis if d.student else '-' }}{% endif %}</td>
+                <td class="px-4 py-3">{{ inv.component.name if inv.component else '-' }}</td>
+                <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(inv.total_amount) }}</td>
+                <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(inv.paid_amount) }}</td>
+                <td class="px-4 py-3 text-right font-medium text-red-600">Rp {{ "{:,.0f}".format(inv.total_amount - inv.paid_amount) }}</td>
+            </tr>
+            {% set first = False %}
+            {% endfor %}
+            {% endfor %}
+            {% if not report_data %}
+            <tr><td colspan="6" class="text-center py-8 text-slate-400">Tidak ada data tunggakan</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

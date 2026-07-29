@@ -1,0 +1,90 @@
+{% extends "base.html.j2" %}
+{% block title %}Laporan - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Laporan / Ringkasan{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap gap-2 mb-4">
+    <form method="get" action="/laporan/" class="flex flex-wrap gap-2">
+        <select name="academic_year_id" class="w-full sm:w-auto px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <option value="">Semua Tahun</option>
+            {% for ay in academic_years %}
+            <option value="{{ ay._id }}" {{ 'selected' if request.args.get('academic_year_id') == str(ay._id) else '' }}>{{ ay.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="period_id" class="w-full sm:w-auto px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <option value="">Semua Periode</option>
+            {% for p in periods %}
+            <option value="{{ p._id }}" {{ 'selected' if request.args.get('period_id') == str(p._id) else '' }}>{{ p.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="status" class="w-full sm:w-auto px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <option value="">Semua Status</option>
+            <option value="paid" {{ 'selected' if request.args.get('status') == 'paid' else '' }}>Lunas</option>
+            <option value="draft" {{ 'selected' if request.args.get('status') == 'draft' else '' }}>Draft</option>
+            <option value="posted" {{ 'selected' if request.args.get('status') == 'posted' else '' }}>Posted</option>
+        </select>
+        <button type="submit" class="bg-primary-600 text-white px-3 py-1.5 rounded-xl text-xs">Filter</button>
+    </form>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <p class="text-xs text-slate-500">Total Tagihan</p>
+        <p class="text-2xl font-bold">{{ total_inv }}</p>
+    </div>
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <p class="text-xs text-slate-500">Lunas</p>
+        <p class="text-2xl font-bold text-green-600">{{ total_paid }}</p>
+    </div>
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <p class="text-xs text-slate-500">Belum Lunas</p>
+        <p class="text-2xl font-bold text-red-600">{{ total_outstanding }}</p>
+    </div>
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <p class="text-xs text-slate-500">Koleksi Rate</p>
+        <p class="text-2xl font-bold text-primary-600">{{ "%.1f"|format(collection_rate) }}%</p>
+    </div>
+</div>
+
+<div class="glass rounded-[32px] overflow-hidden border border-white/60 shadow-sm">
+    <div class="overflow-x-auto -mx-3 px-3">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-900/5 text-slate-500">
+            <tr>
+                <th class="text-left px-4 py-3">Siswa</th>
+                <th class="text-left px-4 py-3">Komponen</th>
+                <th class="text-right px-4 py-3">Tagihan</th>
+                <th class="text-right px-4 py-3">Terbayar</th>
+                <th class="text-right px-4 py-3">Sisa</th>
+                <th class="text-center px-4 py-3">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inv in invoices %}
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-4 py-3">{{ inv.student.name if inv.student else '-' }}</td>
+                <td class="px-4 py-3">{{ inv.component.name if inv.component else '-' }}</td>
+                <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(inv.total_amount) }}</td>
+                <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(inv.paid_amount) }}</td>
+                <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(inv.total_amount - inv.paid_amount) }}</td>
+                <td class="px-4 py-3 text-center">
+                    <span class="text-xs px-2 py-1 rounded-full {{ 'bg-emerald-100 text-emerald-700' if inv.status == 'paid' else 'bg-amber-100 text-amber-700' }}">
+                        {{ inv.status }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="bg-gray-50 font-medium">
+            <tr>
+                <td class="px-4 py-3" colspan="2">Total</td>
+                <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(total_amount) }}</td>
+                <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(total_paid_amount) }}</td>
+                <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(total_amount - total_paid_amount) }}</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html.j2" %}
+{% block title %}Periode & Konfigurasi - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Master Data / Periode & Konfigurasi Biaya{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+<!-- Academic Years -->
+<div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+    <h3 class="font-black text-slate-900 mb-3">Tahun Ajaran</h3>
+    <form method="post" action="/master/periode/academic-year" class="flex flex-col sm:flex-row gap-2 mb-3">
+        <input type="text" name="name" placeholder="Contoh: 2025/2026" required
+            class="flex-1 px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+        <button type="submit" class="bg-primary-600 text-white px-3 py-2 rounded-xl text-sm inline-flex items-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i></button>
+    </form>
+    <div class="space-y-2">
+        {% for ay in academic_years %}
+        <div class="flex items-center justify-between p-2 border rounded-xl {{ 'border-primary-300 bg-primary-50' if ay.is_active else 'border-gray-200' }}">
+            <span class="text-sm">
+                {{ ay.name }}
+                {% if ay.is_active %}<span class="text-xs text-primary-600 ml-1 font-medium">(Aktif)</span>{% endif %}
+            </span>
+            <div class="flex gap-1">
+                {% if not ay.is_active %}
+                <form method="post" action="/master/periode/academic-year/{{ ay._id }}/activate" class="inline">
+                    <button title="Aktifkan" class="text-green-600 hover:text-green-800 text-xs px-1 inline-flex items-center"><i data-lucide="check" class="w-4 h-4"></i></button>
+                </form>
+                {% endif %}
+                <form method="post" action="/master/periode/academic-year/{{ ay._id }}/delete" class="inline"
+                    onsubmit="return confirm('Hapus tahun ajaran {{ ay.name }}?')">
+                    <button class="text-red-500 hover:text-red-700 text-xs px-1 inline-flex items-center"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+        {% if not academic_years %}
+        <p class="text-sm text-slate-400 text-center py-4">Belum ada tahun ajaran</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Billing Periods -->
+<div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+    <h3 class="font-black text-slate-900 mb-3">Periode Tagihan
+        {% if selected_ay_id %}
+        <span class="text-sm font-normal text-slate-500">({{ selected_ay_name }})</span>
+        {% endif %}
+    </h3>
+    {% if selected_ay_id %}
+    <form method="post" action="/master/periode/billing-period" class="space-y-2 mb-3">
+        <input type="hidden" name="academic_year_id" value="{{ selected_ay_id }}">
+        <input type="text" name="name" placeholder="Nama (contoh: Januari 2025)" required
+            class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+        <input type="text" name="code" placeholder="Kode (contoh: JAN25)" required
+            class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <input type="date" name="start_date" required
+                class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+            <input type="date" name="end_date" required
+                class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+        </div>
+        <button type="submit" class="w-full bg-primary-600 text-white px-4 py-2 rounded-xl text-sm">Tambah</button>
+    </form>
+    <div class="space-y-2 max-h-64 overflow-y-auto">
+        {% for p in periods %}
+        <div class="p-2 border rounded-xl border-gray-200 text-sm flex justify-between items-center">
+            <div>
+                <span class="font-medium">{{ p.name }}</span>
+                <span class="text-slate-400 ml-1">({{ p.code }})</span>
+                <br><span class="text-xs text-slate-400">{{ p.start_date.strftime('%d/%m/%Y') if p.start_date else '' }} - {{ p.end_date.strftime('%d/%m/%Y') if p.end_date else '' }}</span>
+            </div>
+            <form method="post" action="/master/periode/billing-period/{{ p._id }}/delete" class="inline"
+                onsubmit="return confirm('Hapus periode {{ p.name }}?')">
+                <input type="hidden" name="academic_year_id" value="{{ selected_ay_id }}">
+                <button class="text-red-500 hover:text-red-700 text-xs inline-flex items-center"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </form>
+        </div>
+        {% endfor %}
+        {% if not periods %}
+        <p class="text-sm text-slate-400 text-center py-4">Belum ada periode tagihan</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="text-sm text-slate-400 text-center py-6">Pilih atau buat tahun ajaran terlebih dahulu</p>
+    {% endif %}
+</div>
+
+<!-- Fee Configs -->
+<div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+    <h3 class="font-black text-slate-900 mb-3">Konfigurasi Biaya per Angkatan</h3>
+    {% if selected_ay_id and components %}
+    <form method="post" action="/master/periode/fee-config" class="space-y-2 mb-3">
+        <input type="hidden" name="academic_year_id" value="{{ selected_ay_id }}">
+        <select name="component_id" required
+            class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+            <option value="">-- Pilih Komponen --</option>
+            {% for comp in components %}
+            <option value="{{ comp._id }}">{{ comp.name }} (Rp {{ "{:,.0f}".format(comp.default_amount) }})</option>
+            {% endfor %}
+        </select>
+        <input type="number" name="angkatan" placeholder="Angkatan (tahun)" required
+            class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none"
+            value="{{ now().year }}">
+        <input type="number" name="amount" placeholder="Nominal (Rp)" required
+            class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm focus:ring-2 focus:ring-primary-500 outline-none">
+        <button type="submit" class="w-full bg-primary-600 text-white px-4 py-2 rounded-xl text-sm">Simpan Konfigurasi</button>
+    </form>
+    <div class="space-y-2 max-h-64 overflow-y-auto">
+        {% for fc in fee_configs %}
+        <div class="p-2 border rounded-xl border-gray-200 text-sm flex justify-between items-center">
+            <div>
+                <span class="font-medium">{{ get_component_name(fc.component_id, components) }}</span>
+                <br>
+                <span class="text-xs text-slate-500">Angkatan {{ fc.angkatan }} &mdash; Rp {{ "{:,.0f}".format(fc.amount) }}</span>
+            </div>
+            <form method="post" action="/master/periode/fee-config/{{ fc._id }}/delete" class="inline"
+                onsubmit="return confirm('Hapus konfigurasi ini?')">
+                <button class="text-red-500 hover:text-red-700 text-xs inline-flex items-center"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </form>
+        </div>
+        {% endfor %}
+        {% if not fee_configs %}
+        <p class="text-sm text-slate-400 text-center py-4">Belum ada konfigurasi biaya</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <p class="text-sm text-slate-400 text-center py-6">Pilih tahun ajaran dan pastikan ada komponen aktif</p>
+    {% endif %}
+</div>
+
+</div>
+<script>lucide.createIcons();</script>
+{% endblock %}

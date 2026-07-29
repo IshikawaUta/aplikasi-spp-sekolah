@@ -1,0 +1,63 @@
+{% extends "base.html.j2" %}
+{% block title %}Rekap Harian - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Laporan / Rekap Harian{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap gap-2 mb-4 items-center">
+    <form method="get" action="/laporan/rekap-harian" class="flex flex-wrap gap-2 items-center">
+        <input type="date" name="date" value="{{ target_date.strftime('%Y-%m-%d') }}" 
+            class="glass bg-white/50 border border-white/60 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500 w-full sm:w-auto">
+        <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-1.5 hover:bg-slate-900 transition active:scale-95">
+            <i data-lucide="search" class="w-4 h-4"></i> Tampilkan
+        </button>
+    </form>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="glass rounded-2xl p-5 border border-white/60 shadow-sm text-center">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Transaksi</p>
+        <p class="text-2xl font-black text-primary-600">{{ total_transactions }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5 border border-white/60 shadow-sm text-center">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Pemasukan</p>
+        <p class="text-xl font-black text-emerald-600">Rp {{ "{:,.0f}".format(total_amount) }}</p>
+    </div>
+    <div class="glass rounded-2xl p-5 border border-white/60 shadow-sm text-center">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tanggal</p>
+        <p class="text-lg font-black text-slate-800">{{ target_date.strftime('%d %B %Y') }}</p>
+    </div>
+</div>
+
+<div class="glass rounded-[32px] overflow-hidden border border-white/60 shadow-sm">
+    <div class="overflow-x-auto -mx-3 px-3">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-900/5 text-slate-500">
+                <tr>
+                    <th class="text-left px-4 py-3 text-xs font-black uppercase tracking-widest">No</th>
+                    <th class="text-left px-4 py-3 text-xs font-black uppercase tracking-widest">No. Pembayaran</th>
+                    <th class="text-left px-4 py-3 text-xs font-black uppercase tracking-widest">Waktu</th>
+                    <th class="text-left px-4 py-3 text-xs font-black uppercase tracking-widest">NIS</th>
+                    <th class="text-left px-4 py-3 text-xs font-black uppercase tracking-widest">Nama</th>
+                    <th class="text-right px-4 py-3 text-xs font-black uppercase tracking-widest">Jumlah</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/40">
+                {% for p in payments %}
+                <tr class="hover:bg-white/50 transition">
+                    <td class="px-4 py-3">{{ loop.index }}</td>
+                    <td class="px-4 py-3 font-semibold">{{ p.payment_no }}</td>
+                    <td class="px-4 py-3 text-xs">{{ p.date.strftime('%H:%M') if p.date else '' }}</td>
+                    <td class="px-4 py-3">{{ p.student_nis }}</td>
+                    <td class="px-4 py-3 font-medium">{{ p.student_name }}</td>
+                    <td class="px-4 py-3 text-right font-bold text-emerald-600">Rp {{ "{:,.0f}".format(p.amount) }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center py-12 text-slate-400">Tidak ada transaksi pada tanggal ini</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>lucide.createIcons();</script>
+{% endblock %}

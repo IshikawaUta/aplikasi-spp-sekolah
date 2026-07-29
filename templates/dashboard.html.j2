@@ -1,0 +1,162 @@
+{% extends "base.html.j2" %}
+{% block title %}Dashboard - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat Cards Row 1 -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm hover-lift">
+        <div class="w-12 h-12 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center mb-4">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+        </div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Siswa</p>
+        <h3 class="text-3xl font-black text-slate-900">{{ stats.total_students }}</h3>
+    </div>
+
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm hover-lift">
+        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center mb-4">
+            <i data-lucide="file-text" class="w-6 h-6"></i>
+        </div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tagihan Aktif</p>
+        <h3 class="text-3xl font-black text-amber-600">{{ stats.total_invoices_active }}</h3>
+    </div>
+
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm hover-lift">
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-4">
+            <i data-lucide="check-circle" class="w-6 h-6"></i>
+        </div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Total Pembayaran</p>
+        <h3 class="text-xl font-black text-emerald-600">Rp {{ "{:,.0f}".format(stats.total_payment_amount) }}</h3>
+    </div>
+
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm hover-lift">
+        <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-4">
+            <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+        </div>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Siswa Menunggak</p>
+        <h3 class="text-3xl font-black text-rose-600">{{ stats.students_with_arrears }}
+            {% if stats.overdue_count > 0 %}
+            <span class="text-xs font-medium text-rose-400">({{ stats.overdue_count }} JT)</span>
+            {% endif %}
+        </h3>
+    </div>
+</div>
+
+<!-- Stat Cards Row 2 -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm text-center hover-lift">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Hari Ini</p>
+        <p class="text-lg font-black text-primary-600">{{ stats.today_payments_count }}</p>
+        <p class="text-xs text-slate-500">Rp {{ "{:,.0f}".format(stats.today_payments_amount) }}</p>
+    </div>
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm text-center hover-lift">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Bulan Ini</p>
+        <p class="text-lg font-black text-indigo-600">{{ stats.month_payments_count }}</p>
+        <p class="text-xs text-slate-500">Rp {{ "{:,.0f}".format(stats.month_payments_amount) }}</p>
+    </div>
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm text-center hover-lift">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tingkat Koleksi</p>
+        <p class="text-lg font-black {{ 'text-emerald-600' if stats.collection_rate >= 80 else 'text-amber-600' if stats.collection_rate >= 50 else 'text-rose-600' }}">{{ stats.collection_rate }}%</p>
+        <p class="text-xs text-slate-400">Lunas / Total</p>
+    </div>
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm text-center hover-lift">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Kelas</p>
+        <p class="text-lg font-black text-slate-800">{{ stats.total_classes }}</p>
+    </div>
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm text-center hover-lift">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Komponen</p>
+        <p class="text-lg font-black text-slate-800">{{ stats.total_components }}</p>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Status Tagihan -->
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="pie-chart" class="w-5 h-5 text-primary-600"></i>
+            <h3 class="font-black text-slate-900">Status Tagihan</h3>
+        </div>
+        <div class="space-y-3 mb-4">
+            <div class="flex items-center justify-between text-sm">
+                <span class="flex items-center gap-2"><span class="w-3 h-3 bg-amber-500 rounded-full"></span> Aktif</span>
+                <span class="font-bold">{{ stats.total_invoices_active }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+                <span class="flex items-center gap-2"><span class="w-3 h-3 bg-emerald-500 rounded-full"></span> Lunas</span>
+                <span class="font-bold">{{ stats.total_invoices_paid }}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm">
+                <span class="flex items-center gap-2"><span class="w-3 h-3 bg-slate-300 rounded-full"></span> Dibatalkan</span>
+                <span class="font-bold">{{ stats.total_invoices_cancelled }}</span>
+            </div>
+        </div>
+        <div class="bg-slate-100 rounded-full h-2 overflow-hidden">
+            {% set total_all = stats.total_invoices_active + stats.total_invoices_paid + stats.total_invoices_cancelled %}
+            {% set paid_pct = (stats.total_invoices_paid / total_all * 100) if total_all > 0 else 0 %}
+            {% set active_pct = (stats.total_invoices_active / total_all * 100) if total_all > 0 else 0 %}
+            <div class="h-full bg-emerald-500 float-left" style="width: {{ paid_pct }}%"></div>
+            <div class="h-full bg-amber-500 float-left" style="width: {{ active_pct }}%"></div>
+        </div>
+        <div class="flex text-[10px] font-medium text-slate-400 mt-1 justify-between">
+            <span>{{ stats.total_invoices_paid }} Lunas</span>
+            <span>{{ stats.total_invoices_active }} Aktif</span>
+            <span>{{ stats.total_invoices_cancelled }} Batal</span>
+        </div>
+    </div>
+
+    <!-- Top 5 Siswa Tunggakan -->
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="trending-down" class="w-5 h-5 text-rose-600"></i>
+            <h3 class="font-black text-slate-900">5 Tunggakan Tertinggi</h3>
+        </div>
+        {% if stats.top_arrears %}
+        <div class="space-y-3">
+            {% for row in stats.top_arrears %}
+            <div class="flex items-center justify-between text-sm p-2 rounded-xl hover:bg-white/50 transition">
+                <span class="font-semibold text-slate-700 truncate max-w-[140px]">{{ row.student.name }}</span>
+                <span class="font-black text-rose-600">Rp {{ "{:,.0f}".format(row.sisa) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-12 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                <i data-lucide="check" class="w-8 h-8"></i>
+            </div>
+            <p class="text-sm text-slate-400 font-medium">Tidak ada tunggakan</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm">
+        <div class="flex items-center gap-3 mb-4">
+            <i data-lucide="clock" class="w-5 h-5 text-primary-600"></i>
+            <h3 class="font-black text-slate-900">Pembayaran Terbaru</h3>
+        </div>
+        {% if stats.recent_payments %}
+        <div class="space-y-3">
+            {% for p in stats.recent_payments %}
+            <div class="flex items-center justify-between text-sm p-2 rounded-xl hover:bg-white/50 transition">
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-slate-700 truncate">{{ p.student.name if p.student else '-' }}</p>
+                    <p class="text-[10px] text-slate-400 font-medium">{{ p.payment_no }}</p>
+                </div>
+                <span class="font-black text-emerald-600 whitespace-nowrap ml-2">Rp {{ "{:,.0f}".format(p.amount_paid) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-12 text-center">
+            <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                <i data-lucide="inbox" class="w-8 h-8"></i>
+            </div>
+            <p class="text-sm text-slate-400 font-medium">Belum ada pembayaran</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>lucide.createIcons();</script>
+{% endblock %}

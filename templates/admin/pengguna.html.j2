@@ -1,0 +1,134 @@
+{% extends "base.html.j2" %}
+{% block title %}Pengguna - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Administrasi / Manajemen Pengguna{% endblock %}
+
+{% block content %}
+{% if error %}
+<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm">{{ error }}</div>
+{% endif %}
+
+<div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm mb-6">
+    <h3 class="font-black text-slate-900 mb-3">Tambah Pengguna</h3>
+    <form method="post" action="/admin/pengguna" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <input type="text" name="full_name" placeholder="Nama Lengkap" required
+            class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+        <input type="email" name="email" placeholder="Email" required
+            class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+        <input type="password" name="password" placeholder="Password (min 8 karakter)" required minlength="8"
+            class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+        <select name="role" class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <option value="kasir">Kasir</option>
+            <option value="admin">Admin</option>
+        </select>
+        <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> Tambah
+        </button>
+    </form>
+</div>
+
+<div class="glass rounded-[32px] overflow-hidden border border-white/60 shadow-sm">
+    <div class="p-4 border-b">
+        <h3 class="font-black text-slate-900">Daftar Pengguna</h3>
+    </div>
+    <div class="overflow-x-auto -mx-3 px-3">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-900/5 text-slate-500">
+            <tr>
+                <th class="text-left px-4 py-3">Nama</th>
+                <th class="text-left px-4 py-3">Email</th>
+                <th class="text-center px-4 py-3">Role</th>
+                <th class="text-center px-4 py-3">Status</th>
+                <th class="text-left px-4 py-3">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr class="border-t hover:bg-gray-50 {{ 'bg-primary-50' if session.get('user_email') == u.email else '' }}">
+                <td class="px-4 py-3">
+                    {{ u.full_name }}
+                    {% if session.get('user_email') == u.email %}<span class="text-xs text-primary-500 ml-1">(Anda)</span>{% endif %}
+                </td>
+                <td class="px-4 py-3">{{ u.email }}</td>
+                <td class="px-4 py-3 text-center">
+                    <span class="text-xs px-2 py-1 rounded-full {{ 'bg-rose-100 text-rose-700' if u.role == 'admin' else 'bg-primary-100 text-primary-600' }}">
+                        {{ u.role }}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                    <span class="text-xs px-2 py-1 rounded-full {{ 'bg-emerald-100 text-emerald-700' if u.is_active else 'bg-gray-100 text-slate-500' }}">
+                        {{ 'Aktif' if u.is_active else 'Nonaktif' }}
+                    </span>
+                </td>
+                <td class="px-4 py-3">
+                    <div class="flex gap-1 flex-wrap">
+                        <button onclick="changeRole('{{ u._id }}', '{{ u.role }}', '{{ escapejs(u.full_name) }}')"
+                            class="text-primary-600 text-xs hover:text-primary-700">Role</button>
+                        <button onclick="changePassword('{{ u._id }}', '{{ escapejs(u.full_name) }}')"
+                            class="text-yellow-600 text-xs hover:text-yellow-800">Password</button>
+                        <form method="post" action="/admin/pengguna/{{ u._id }}/toggle-active" class="inline">
+                            <input type="hidden" name="is_active" value="{{ 'false' if u.is_active else 'true' }}">
+                            <button class="text-xs {{ 'text-red-600 hover:text-red-800' if u.is_active else 'text-green-600 hover:text-green-800' }}">
+                                {{ 'Nonaktifkan' if u.is_active else 'Aktifkan' }}
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<!-- Role Modal -->
+<div id="roleModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden overflow-y-auto">
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm w-full max-w-sm mx-4">
+        <h3 class="font-semibold text-lg mb-4">Ubah Role</h3>
+        <form method="post" id="roleForm" class="space-y-3">
+            <p id="roleUserName" class="text-sm text-slate-600"></p>
+            <select name="role" class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+                <option value="kasir">Kasir</option>
+                <option value="admin">Admin</option>
+            </select>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModal('roleModal')" class="px-4 py-2 border rounded-xl text-sm">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Password Modal -->
+<div id="passModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden overflow-y-auto">
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm w-full max-w-sm mx-4">
+        <h3 class="font-semibold text-lg mb-4">Ubah Password</h3>
+        <form method="post" id="passForm" class="space-y-3">
+            <p id="passUserName" class="text-sm text-slate-600"></p>
+            <input type="password" name="password" placeholder="Password baru" required minlength="8"
+                class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModal('passModal')" class="px-4 py-2 border rounded-xl text-sm">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function changeRole(id, role, name) {
+    document.getElementById('roleForm').action = '/admin/pengguna/' + id + '/role';
+    document.getElementById('roleForm').querySelector('select').value = role;
+    document.getElementById('roleUserName').textContent = name;
+    document.getElementById('roleModal').classList.remove('hidden');
+}
+function changePassword(id, name) {
+    document.getElementById('passForm').action = '/admin/pengguna/' + id + '/password';
+    document.getElementById('passUserName').textContent = name;
+    document.getElementById('passModal').classList.remove('hidden');
+}
+function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+}
+</script>
+<script>lucide.createIcons();</script>
+{% endblock %}

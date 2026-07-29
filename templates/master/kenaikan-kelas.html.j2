@@ -1,0 +1,56 @@
+{% extends "base.html.j2" %}
+{% block title %}Kenaikan Kelas - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Master Data / Kenaikan Kelas{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm">
+        <h3 class="font-black text-slate-900 mb-1">Kenaikan Kelas</h3>
+        <p class="text-sm text-slate-400 mb-4">Promosikan semua siswa dari satu kelas ke kelas berikutnya</p>
+        
+        <div class="h-1.5 w-20 bg-primary-600 rounded-full mb-4"></div>
+        
+        {% set error_msg = request.args.get('error') %}
+        {% set success_msg = request.args.get('success') %}
+        {% if error_msg %}
+        <div class="glass bg-rose-50/80 border border-rose-100 rounded-2xl px-4 py-3 mb-4 text-sm font-semibold text-rose-600">
+            {% if error_msg == 'invalid' %}Data tidak valid. Pilih kelas asal dan tujuan.{% elif error_msg == 'notfound' %}Kelas tidak ditemukan.{% else %}Terjadi kesalahan.{% endif %}
+        </div>
+        {% endif %}
+        {% if success_msg %}
+        <div class="glass bg-emerald-50/80 border border-emerald-100 rounded-2xl px-4 py-3 mb-4 text-sm font-semibold text-emerald-600">
+            {{ success_msg }} siswa berhasil dinaikkan kelas.
+        </div>
+        {% endif %}
+        
+        <form method="post" action="/master/kenaikan-kelas" class="space-y-4">
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Dari Kelas</label>
+                <select name="from_class" required class="w-full glass bg-white/50 border border-white/60 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary-500">
+                    <option value="">-- Pilih Kelas --</option>
+                    {% for c in classes %}
+                    <option value="{{ c._id }}">{{ c.name }} ({{ c.jenjang }} - Angkatan {{ c.angkatan }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Ke Kelas</label>
+                <select name="to_class" required class="w-full glass bg-white/50 border border-white/60 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary-500">
+                    <option value="">-- Pilih Kelas --</option>
+                    {% for c in classes %}
+                    <option value="{{ c._id }}">{{ c.name }} ({{ c.jenjang }} - Angkatan {{ c.angkatan }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Angkatan Baru</label>
+                <input type="number" name="to_angkatan" required class="w-full glass bg-white/50 border border-white/60 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary-500" placeholder="2025">
+            </div>
+            <button type="submit" onclick="return confirm('Yakin ingin menaikkan semua siswa dari kelas yang dipilih?')" class="w-full bg-primary-600 text-white py-3 rounded-2xl font-bold text-sm hover:bg-slate-900 transition active:scale-95">
+                Proses Kenaikan Kelas
+            </button>
+        </form>
+    </div>
+</div>
+<script>lucide.createIcons();</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Aplikasi SPP Sekolah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
+                    },
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/?size=100&id=115369&format=png&color=000000">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+        .dark body, body.dark {
+            background: radial-gradient(circle at top right, #0f172a 0%, #1e1b4b 100%) !important;
+            background-attachment: fixed !important;
+        }
+        .dark .glass {
+            background: rgba(30, 41, 59, 0.7) !important;
+            border-color: rgba(255, 255, 255, 0.06) !important;
+        }
+        .dark .text-slate-900, .dark .text-slate-800 { color: #e2e8f0 !important; }
+        .dark .text-slate-700 { color: #cbd5e1 !important; }
+        .dark .text-slate-600 { color: #94a3b8 !important; }
+        .dark .text-slate-500, .dark .text-slate-400 { color: #64748b !important; }
+        .dark .bg-slate-50 { background: #0f172a !important; }
+        .dark .border-white\/60 { border-color: rgba(255,255,255,0.06) !important; }
+        .dark .bg-white\/50 { background: rgba(30, 41, 59, 0.4) !important; }
+        .dark .bg-rose-50\/80 { background: rgba(244, 63, 94, 0.15) !important; }
+        .dark .bg-slate-400 { background: rgba(148, 163, 184, 0.5) !important; }
+        .dark input { background: rgba(30,41,59,0.5) !important; color: #e2e8f0 !important; border-color: rgba(255,255,255,0.1) !important; }
+        .dark input::placeholder { color: #64748b !important; }
+        .dark .hover\:bg-white\/50:hover { background: rgba(255,255,255,0.08) !important; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-slate-50" style="background: radial-gradient(circle at top right, #fdfcfb 0%, #e2d1c3 100%);">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/15 rounded-full blur-3xl"></div>
+    </div>
+
+    <button onclick="toggleTheme()" class="glass absolute top-6 right-6 w-10 h-10 rounded-2xl flex items-center justify-center text-slate-500 hover:text-primary-600 active:scale-95 transition shadow-lg z-20" id="themeToggle">
+        <i data-lucide="moon" class="w-4 h-4 hidden dark:inline-block"></i>
+        <i data-lucide="sun" class="w-4 h-4 dark:hidden"></i>
+    </button>
+    <div class="glass rounded-[40px] p-8 w-full max-w-md shadow-2xl animate__animated animate__zoomIn relative z-10">
+        <div class="text-center mb-6">
+            <div class="w-14 h-14 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary-200">
+                <i data-lucide="landmark" class="w-7 h-7 text-white"></i>
+            </div>
+            <h1 class="text-2xl font-black text-slate-900">Aplikasi SPP Sekolah</h1>
+            <p class="text-sm text-slate-400 font-medium mt-1">Sistem Pembayaran SPP</p>
+        </div>
+
+        <div class="h-1.5 w-20 bg-primary-600 rounded-full mx-auto mb-6"></div>
+
+        {% if error %}
+        <div class="glass bg-rose-50/80 border border-rose-100 rounded-2xl px-4 py-3 mb-4 text-sm font-semibold text-rose-600 animate__animated animate__shakeX">
+            <i data-lucide="alert-circle" class="w-4 h-4 inline mr-1"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" action="/auth/login" class="space-y-4">
+            <div class="relative">
+                <i data-lucide="mail" class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                <input type="email" name="email" placeholder="Email" required
+                    class="w-full bg-white/50 border border-white/60 rounded-2xl pl-12 pr-6 py-4 text-sm font-medium outline-none transition focus:ring-2 focus:ring-primary-500 focus:bg-white shadow-sm">
+            </div>
+            <div class="relative">
+                <i data-lucide="lock" class="w-5 h-5 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2"></i>
+                <input type="password" name="password" placeholder="Password" required minlength="8"
+                    class="w-full bg-white/50 border border-white/60 rounded-2xl pl-12 pr-6 py-4 text-sm font-medium outline-none transition focus:ring-2 focus:ring-primary-500 focus:bg-white shadow-sm">
+            </div>
+            <button type="submit" class="w-full bg-primary-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-primary-100 hover:bg-slate-900 hover:shadow-none transition-all active:scale-95">
+                Masuk
+            </button>
+        </form>
+    </div>
+
+    <script>
+        (function() {
+            if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+        function toggleTheme() {
+            var isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            lucide.createIcons();
+        }
+        lucide.createIcons();
+    </script>
+</body>
+</html>

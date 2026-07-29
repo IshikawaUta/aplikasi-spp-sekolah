@@ -1,0 +1,126 @@
+{% extends "base.html.j2" %}
+{% block title %}Pembayaran - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Transaksi / Pembayaran Tunai{% endblock %}
+
+{% block content %}
+{% if bank_accounts %}
+<div class="bg-primary-50 border border-blue-200 rounded-xl p-4 mb-4">
+    <p class="text-sm font-medium text-primary-700 mb-2"><i data-lucide="university" class="w-4 h-4 mr-1"></i> Rekening Aktif:</p>
+    <div class="flex flex-wrap gap-3">
+        {% for ba in bank_accounts %}
+        <div class="bg-white rounded px-3 py-2 text-xs border">
+            <span class="font-medium">{{ ba.bank_name }}</span><br>
+            <span class="text-slate-600">{{ ba.account_no }} a.n. {{ ba.account_name }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Form Pembayaran -->
+    <div class="glass rounded-2xl p-4 border border-white/60 shadow-sm">
+        <h3 class="font-black text-slate-900 mb-3">Proses Pembayaran</h3>
+        <form method="get" action="/pembayaran/" class="space-y-2 mb-4">
+            <select name="class_id" class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm" onchange="this.form.submit()">
+                <option value="">-- Pilih Kelas --</option>
+                {% for c in classes %}
+                <option value="{{ c._id }}" {{ 'selected' if request.args.get('class_id') == str(c._id) else '' }}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+            <select name="student_id" class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm" onchange="this.form.submit()">
+                <option value="">-- Pilih Siswa --</option>
+                {% for s in students %}
+                <option value="{{ s._id }}" {{ 'selected' if selected_student_id == str(s._id) else '' }}>{{ s.name }} ({{ s.nis }})</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        {% if selected_student_id %}
+        <form method="post" action="/pembayaran/" class="space-y-3">
+            <input type="hidden" name="student_id" value="{{ selected_student_id }}">
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">Tanggal Bayar</label>
+                <input type="date" name="payment_date" value="{{ now().strftime('%Y-%m-%d') }}"
+                    class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            </div>
+
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+                {% for inv in unpaid_invoices %}
+                <div class="border rounded-xl p-2 text-xs">
+                    <div class="flex justify-between mb-1">
+                        <span class="font-medium">{{ inv.component.name if inv.component else '-' }}</span>
+                        <span>{{ inv.period.name if inv.period else '-' }}</span>
+                    </div>
+                    <div class="flex justify-between text-slate-500 mb-1">
+                        <span>Total: Rp {{ "{:,.0f}".format(inv.total_amount) }}</span>
+                        <span>Terbayar: Rp {{ "{:,.0f}".format(inv.paid_amount) }}</span>
+                    </div>
+                    {% set remaining = inv.total_amount - inv.paid_amount %}
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-500">Sisa: Rp {{ "{:,.0f}".format(remaining) }}</span>
+                        <input type="number" name="pay_{{ inv._id }}" value="{{ remaining }}"
+                            min="0" max="{{ remaining }}"
+                            class="w-28 px-2 py-1 border border-white/60 bg-white/50 rounded text-right text-sm">
+                    </div>
+                </div>
+                {% endfor %}
+                {% if not unpaid_invoices %}
+                <p class="text-sm text-slate-400 text-center py-4">Tidak ada tagihan yang perlu dibayar</p>
+                {% endif %}
+            </div>
+
+            {% if unpaid_invoices %}
+            <button type="submit" class="w-full bg-green-700 text-white py-2 rounded-xl text-sm font-medium inline-flex items-center justify-center gap-1.5">
+                <i data-lucide="check" class="w-4 h-4"></i> Proses Pembayaran
+            </button>
+            {% endif %}
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Riwayat Pembayaran -->
+    <div class="lg:col-span-2 glass rounded-[32px] overflow-hidden border border-white/60 shadow-sm">
+        <div class="p-4 border-b">
+            <h3 class="font-black text-slate-900">Riwayat Pembayaran</h3>
+        </div>
+        <div class="overflow-x-auto -mx-3 px-3">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-900/5 text-slate-500">
+                <tr>
+                    <th class="text-left px-4 py-3">No</th>
+                    <th class="text-left px-4 py-3">Tanggal</th>
+                    <th class="text-left px-4 py-3">Siswa</th>
+                    <th class="text-right px-4 py-3">Total</th>
+                    <th class="text-center px-4 py-3">Status</th>
+                    <th class="text-center px-4 py-3">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="px-4 py-3">{{ p.payment_no }}</td>
+                    <td class="px-4 py-3">{{ p.payment_date.strftime('%d/%m/%Y') if p.payment_date else '-' }}</td>
+                    <td class="px-4 py-3">{{ p.student.name if p.student else '-' }}</td>
+                    <td class="px-4 py-3 text-right">Rp {{ "{:,.0f}".format(p.amount_paid) }}</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="text-xs px-2 py-1 rounded-full
+                            {{ 'bg-emerald-100 text-emerald-700' if p.state == 'paid' else 'bg-amber-100 text-amber-700' if p.state == 'partial' else 'bg-rose-100 text-rose-700' if p.is_voided else 'bg-slate-100 text-slate-500' }}">
+                            {{ 'Batal' if p.is_voided else p.state }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <a href="/pembayaran/kwitansi/{{ p._id }}" target="_blank" class="text-primary-600 hover:text-primary-700 text-xs font-medium">Kwitansi</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not payments %}
+                <tr><td colspan="6" class="text-center py-8 text-slate-400">Belum ada pembayaran</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+<script>lucide.createIcons();</script>
+{% endblock %}

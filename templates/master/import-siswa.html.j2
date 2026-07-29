@@ -1,0 +1,41 @@
+{% extends "base.html.j2" %}
+{% block title %}Import Siswa - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Master Data / Import Siswa{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm">
+        <h3 class="font-black text-slate-900 mb-1">Import Siswa dari Excel</h3>
+        <p class="text-sm text-slate-400 mb-4">Upload file Excel (.xlsx) dengan kolom: NIS, Nama, Kelas, Angkatan, Gender</p>
+        <div class="h-1.5 w-20 bg-primary-600 rounded-full mb-4"></div>
+
+        {% if result %}
+        {% if result.error %}
+        <div class="glass bg-rose-50/80 border border-rose-100 rounded-2xl px-4 py-3 mb-4 text-sm font-semibold text-rose-600">{{ result.error }}</div>
+        {% else %}
+        <div class="glass bg-emerald-50/80 border border-emerald-100 rounded-2xl px-4 py-3 mb-4 text-sm">
+            <p class="font-semibold text-emerald-700">Import berhasil!</p>
+            <p class="text-emerald-600">Berhasil: {{ result.imported }} | Dilewati: {{ result.skipped }}</p>
+            {% if result.errors %}
+            <div class="mt-2 text-rose-600 text-xs">
+                {% for e in result.errors[:5] %}<p>{{ e }}</p>{% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <form method="post" action="/master/siswa/import" enctype="multipart/form-data" class="space-y-4">
+            <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 block">File Excel</label>
+                <input type="file" name="file" accept=".xlsx" required
+                    class="w-full glass bg-white/50 border border-white/60 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-primary-50 file:text-primary-600">
+            </div>
+            <button type="submit" class="w-full bg-primary-600 text-white py-3 rounded-2xl font-bold text-sm hover:bg-slate-900 transition active:scale-95">
+                Upload & Import
+            </button>
+        </form>
+    </div>
+</div>
+<script>lucide.createIcons();</script>
+{% endblock %}

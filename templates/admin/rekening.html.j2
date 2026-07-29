@@ -1,0 +1,109 @@
+{% extends "base.html.j2" %}
+{% block title %}Rekening - {{ config.APP_NAME }}{% endblock %}
+{% block header_title %}Administrasi / Rekening Bank{% endblock %}
+
+{% block content %}
+<div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm mb-6">
+    <h3 class="font-black text-slate-900 mb-3">Tambah Rekening</h3>
+    <form method="post" action="/admin/rekening" class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <input type="text" name="bank_name" placeholder="Nama Bank" required
+            class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+        <input type="text" name="account_no" placeholder="No. Rekening" required
+            class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+        <input type="text" name="account_name" placeholder="Atas Nama" required
+            class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+        <select name="is_active" class="px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <option value="true">Aktif</option>
+            <option value="false">Nonaktif</option>
+        </select>
+        <button type="submit" class="bg-primary-600 text-white px-4 py-2 rounded-xl text-sm font-bold inline-flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> Simpan
+        </button>
+    </form>
+</div>
+
+<div class="glass rounded-[32px] overflow-hidden border border-white/60 shadow-sm">
+    <div class="p-4 border-b">
+        <h3 class="font-black text-slate-900">Daftar Rekening</h3>
+    </div>
+    <div class="overflow-x-auto -mx-3 px-3">
+    <table class="w-full text-sm">
+        <thead class="bg-slate-900/5 text-slate-500">
+            <tr>
+                <th class="text-left px-4 py-3">Bank</th>
+                <th class="text-left px-4 py-3">No. Rekening</th>
+                <th class="text-left px-4 py-3">Atas Nama</th>
+                <th class="text-center px-4 py-3">Status</th>
+                <th class="text-left px-4 py-3">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in bank_accounts %}
+            <tr class="border-t hover:bg-gray-50">
+                <td class="px-4 py-3 font-medium">{{ b.bank_name }}</td>
+                <td class="px-4 py-3 font-mono">{{ b.account_no }}</td>
+                <td class="px-4 py-3">{{ b.account_name }}</td>
+                <td class="px-4 py-3 text-center">
+                    <span class="text-xs px-2 py-1 rounded-full {{ 'bg-emerald-100 text-emerald-700' if b.is_active else 'bg-slate-100 text-slate-500' }}">
+                        {{ 'Aktif' if b.is_active else 'Nonaktif' }}
+                    </span>
+                </td>
+                <td class="px-4 py-3">
+                    <button onclick="editBank('{{ b._id }}', '{{ escapejs(b.bank_name) }}', '{{ escapejs(b.account_no) }}', '{{ escapejs(b.account_name) }}', '{{ 'true' if b.is_active else 'false' }}')"
+                        class="text-blue-600 text-xs hover:text-blue-800 mr-2">Edit</button>
+                    <button onclick="confirmDelete('{{ b._id }}', '{{ escapejs(b.bank_name) }}')"
+                        class="text-red-600 text-xs hover:text-red-800">Hapus</button>
+                </td>
+            </tr>
+            {% endfor %}
+            {% if not bank_accounts %}
+            <tr><td colspan="5" class="text-center py-8 text-slate-400">Belum ada rekening</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden overflow-y-auto">
+    <div class="glass rounded-[32px] p-6 border border-white/60 shadow-sm w-full max-w-md mx-4">
+        <h3 class="font-semibold text-lg mb-4">Edit Rekening</h3>
+        <form method="post" id="editForm" class="space-y-3">
+            <input type="text" name="bank_name" id="editBankName" required
+                class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <input type="text" name="account_no" id="editAccountNo" required
+                class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <input type="text" name="account_name" id="editAccountName" required
+                class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+            <select name="is_active" id="editActive" class="w-full px-3 py-2 border border-white/60 bg-white/50 rounded-xl text-sm">
+                <option value="true">Aktif</option>
+                <option value="false">Nonaktif</option>
+            </select>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 border rounded-xl text-sm">Batal</button>
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-xl text-sm">Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+<form id="deleteForm" method="post" class="hidden"></form>
+
+<script>
+function editBank(id, name, no, accountName, active) {
+    document.getElementById('editForm').action = '/admin/rekening/' + id + '/update';
+    document.getElementById('editBankName').value = name;
+    document.getElementById('editAccountNo').value = no;
+    document.getElementById('editAccountName').value = accountName;
+    document.getElementById('editActive').value = active;
+    document.getElementById('editModal').classList.remove('hidden');
+}
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function confirmDelete(id, name) {
+    if (confirm('Hapus rekening ' + name + '?')) {
+        var form = document.getElementById('deleteForm');
+        form.action = '/admin/rekening/' + id + '/delete';
+        form.submit();
+    }
+}
+</script>
+<script>lucide.createIcons();</script>
+{% endblock %}

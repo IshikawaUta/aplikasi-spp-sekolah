@@ -19,6 +19,25 @@ def event_loop():
     loop.close()
 
 
+
+# ── Pre-import semua model agar mereka meng-cache get_db() asli ─────
+# Jika tidak di-pre-import, test pertama di tiap class model akan
+# meng-capture fake_get_db dari mock_db fixture, dan test-test berikutnya
+# di class yang sama akan menggunakan stale closure ke mock db yang salah.
+
+import models.audit
+import models.bank_account
+import models.class_model
+import models.component
+import models.dashboard
+import models.helpers
+import models.invoice
+import models.payment
+import models.period
+import models.student
+import models.user
+import models.virtual_account
+
 # ── Mock DB untuk model unit tests ───────────────────────────────────
 
 @pytest.fixture

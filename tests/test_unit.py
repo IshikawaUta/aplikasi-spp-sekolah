@@ -719,10 +719,12 @@ class TestVirtualAccountModel:
         mock_db.invoices.find_one = AsyncMock(
             return_value={"_id": inv_oid, "total_amount": 150000, "paid_amount": 0})
         mock_db.va_invoice_lines.insert_many = AsyncMock()
-        va = await create_virtual_account({
-            "student_id": str(ObjectId()), "bank_code": "bca",
-            "invoice_ids": [str(inv_oid)],
-        })
+        with patch("models.virtual_account.Config") as mock_cfg:
+            mock_cfg.HAS_XENDIT = False
+            va = await create_virtual_account({
+                "student_id": str(ObjectId()), "bank_code": "bca",
+                "invoice_ids": [str(inv_oid)],
+            })
         assert isinstance(va, dict)
 
     async def test_create_virtual_account_xendit_ok(self, mock_db):

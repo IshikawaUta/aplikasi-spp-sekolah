@@ -140,14 +140,14 @@ async def xendit_webhook():
 
 
 @app.listener("before_server_start")
-async def startup():
+async def startup(app):
     await ensure_indexes()
     from models.user import seed_admin
     await seed_admin()
 
 
 @app.listener("after_server_stop")
-async def shutdown():
+async def shutdown(app):
     await close_db()
 
 

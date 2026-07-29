@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
+
 from bson import ObjectId
+
 from models.db import get_db, get_next_sequence
 
 
@@ -49,7 +51,7 @@ async def create_payment(data: dict, lines: list) -> str:
     amount_paid = amount_total
     amount_due = 0
 
-    if amount_paid >= amount_total and amount_total > 0:
+    if amount_paid >= amount_total > 0:
         state = "paid"
     elif amount_paid > 0:
         state = "partial"

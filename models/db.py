@@ -1,5 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo import ReturnDocument
+
 from config import Config
 
 _client = None

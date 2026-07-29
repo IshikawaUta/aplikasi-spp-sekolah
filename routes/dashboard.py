@@ -1,9 +1,10 @@
 import re
 
 from fenrir import Blueprint, render_template, request
-from routes.decorators import login_required
+
 from models.dashboard import dashboard_stats
 from models.db import get_db
+from routes.decorators import login_required
 
 bp = Blueprint("dashboard", url_prefix="")
 

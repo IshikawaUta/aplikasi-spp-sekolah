@@ -1,5 +1,6 @@
 async def dashboard_stats():
     from datetime import datetime, timezone
+
     from models.db import get_db
     db = await get_db()
     now = datetime.now(timezone.utc)

@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
-from bson import ObjectId
+
 import pymongo.errors
+from bson import ObjectId
+
 from models.db import get_db
 
 

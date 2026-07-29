@@ -1,6 +1,8 @@
-import bcrypt
 from datetime import datetime, timezone
+
+import bcrypt
 from bson import ObjectId
+
 from models.db import get_db
 
 

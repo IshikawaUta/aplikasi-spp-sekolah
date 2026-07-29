@@ -1,9 +1,11 @@
 import os
+
 os.environ["FENRIR_DEV_MODE"] = "1"
 
 import asyncio
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 from bson import ObjectId
 
 
@@ -36,7 +38,7 @@ import models.payment
 import models.period
 import models.student
 import models.user
-import models.virtual_account
+import models.virtual_account  # noqa: F401
 
 # ── Mock DB untuk model unit tests ───────────────────────────────────
 

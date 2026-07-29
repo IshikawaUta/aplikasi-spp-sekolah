@@ -1,17 +1,37 @@
-from fenrir import Blueprint, request, redirect, render_template, g
-from routes.decorators import csrf_protect, login_required, admin_required, validate_object_id
-from datetime import datetime, timezone
-from bson import ObjectId
-from models.student import get_students, create_student, update_student, delete_student
-from models.class_model import get_classes, create_class, update_class, delete_class
-from models.component import get_components, create_component, update_component, delete_component
-from models.period import (
-    get_academic_years, create_academic_year, toggle_academic_year_active, delete_academic_year,
-    get_billing_periods, create_billing_period, update_billing_period, delete_billing_period,
-    get_fee_configs, upsert_fee_config, delete_fee_config,
-)
-from models.audit import log_audit
 import io
+from datetime import datetime, timezone
+
+from bson import ObjectId
+from fenrir import Blueprint, g, redirect, render_template, request
+
+from models.audit import log_audit
+from models.class_model import create_class, delete_class, get_classes, update_class
+from models.component import (
+    create_component,
+    delete_component,
+    get_components,
+    update_component,
+)
+from models.period import (
+    create_academic_year,
+    create_billing_period,
+    delete_academic_year,
+    delete_billing_period,
+    delete_fee_config,
+    get_academic_years,
+    get_billing_periods,
+    get_fee_configs,
+    toggle_academic_year_active,
+    update_billing_period,
+    upsert_fee_config,
+)
+from models.student import create_student, delete_student, get_students, update_student
+from routes.decorators import (
+    admin_required,
+    csrf_protect,
+    login_required,
+    validate_object_id,
+)
 
 bp = Blueprint("master", url_prefix="/master")
 

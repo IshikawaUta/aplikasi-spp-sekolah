@@ -1,17 +1,14 @@
 from datetime import datetime, timezone
+
 from bson import ObjectId
-from fenrir import Fenrir, render_template, request, session, g
+from fenrir import Fenrir, g, render_template, request, session
 from fenrir.middleware import CORSMiddleware
-from config import Config
-from models.db import get_db, close_db, ensure_indexes
-from services.csrf import get_or_create_csrf_token
-import routes.auth as auth
-import routes.dashboard as dashboard
-import routes.master as master
-import routes.tagihan as tagihan
-import routes.pembayaran as pembayaran
-import routes.laporan as laporan
+
 import routes.admin as admin_routes
+from config import Config
+from models.db import close_db, ensure_indexes, get_db
+from routes import auth, dashboard, laporan, master, pembayaran, tagihan
+from services.csrf import get_or_create_csrf_token
 
 app = Fenrir(
     title=Config.APP_TITLE,

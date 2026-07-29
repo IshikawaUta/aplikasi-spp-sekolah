@@ -1,15 +1,25 @@
-from fenrir import Blueprint, request, redirect, render_template, g
-from routes.decorators import csrf_protect, login_required, admin_required, validate_object_id
-from models.invoice import (
-    get_invoices, create_invoice, update_invoice, cancel_invoice,
-    update_invoice_paid_off, mass_generate_invoices,
-)
-from models.student import get_students
+from bson import ObjectId
+from fenrir import Blueprint, g, redirect, render_template, request
+
+from models.audit import log_audit
 from models.class_model import get_classes
 from models.component import get_components
+from models.invoice import (
+    cancel_invoice,
+    create_invoice,
+    get_invoices,
+    mass_generate_invoices,
+    update_invoice,
+    update_invoice_paid_off,
+)
 from models.period import get_academic_years, get_billing_periods
-from models.audit import log_audit
-from bson import ObjectId
+from models.student import get_students
+from routes.decorators import (
+    admin_required,
+    csrf_protect,
+    login_required,
+    validate_object_id,
+)
 
 bp = Blueprint("tagihan", url_prefix="/tagihan")
 

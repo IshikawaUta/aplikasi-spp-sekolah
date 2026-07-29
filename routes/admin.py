@@ -1,11 +1,23 @@
-from fenrir import Blueprint, request, redirect, render_template, g
-from routes.decorators import csrf_protect, admin_required, validate_object_id
-from models.user import get_users, create_user, update_user_role, update_user_password, toggle_user_active
-from models.payment import get_payments, void_payment
-from models.invoice import get_invoices, update_invoice
-from models.bank_account import get_bank_accounts, create_bank_account, update_bank_account, delete_bank_account
-from models.audit import log_audit
 from bson import ObjectId
+from fenrir import Blueprint, g, redirect, render_template, request
+
+from models.audit import log_audit
+from models.bank_account import (
+    create_bank_account,
+    delete_bank_account,
+    get_bank_accounts,
+    update_bank_account,
+)
+from models.invoice import get_invoices, update_invoice
+from models.payment import get_payments, void_payment
+from models.user import (
+    create_user,
+    get_users,
+    toggle_user_active,
+    update_user_password,
+    update_user_role,
+)
+from routes.decorators import admin_required, csrf_protect, validate_object_id
 
 bp = Blueprint("admin", url_prefix="/admin")
 

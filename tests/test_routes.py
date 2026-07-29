@@ -1,6 +1,7 @@
-import pytest
 import re
 import time
+
+import pytest
 from bson import ObjectId
 
 
@@ -43,8 +44,8 @@ class TestAuth:
         assert r.status_code == 200
 
     def test_redirect_to_login(self):
-        from tests.conftest import Client
         from app import app as _app
+        from tests.conftest import Client
         c = Client(_app)
         c._open()
         try:

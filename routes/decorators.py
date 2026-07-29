@@ -1,10 +1,12 @@
 from functools import wraps
+from urllib.parse import quote
+
 from bson import ObjectId
 from bson.errors import InvalidId
-from fenrir import request, redirect, session, g, Response
+from fenrir import Response, g, redirect, request, session
 from fenrir.exceptions import HTTPBadRequest
+
 from services.csrf import validate_csrf_token
-from urllib.parse import quote
 
 
 def login_required(f):

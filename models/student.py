@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
-from bson import ObjectId
-from models.db import get_db
+
 import pymongo.errors
+from bson import ObjectId
+
+from models.db import get_db
 
 
 async def get_students(class_id: str | None = None, search: str | None = None) -> list:

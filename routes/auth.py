@@ -1,4 +1,5 @@
-from fenrir import Blueprint, request, redirect, session, render_template
+from fenrir import Blueprint, redirect, render_template, request, session
+
 from models.user import authenticate
 from services.ratelimit import check_rate_limit
 

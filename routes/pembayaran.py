@@ -1,16 +1,30 @@
-from fenrir import Blueprint, request, redirect, render_template, g
-from routes.decorators import csrf_protect, login_required, admin_required, validate_object_id
-from models.student import get_students
+from bson import ObjectId
+from fenrir import Blueprint, g, redirect, render_template, request
+
+from models.audit import log_audit
+from models.bank_account import get_bank_accounts
 from models.class_model import get_classes
 from models.invoice import get_invoices
-from models.payment import get_payments, create_payment, get_payment_by_id, get_payment_lines
-from models.virtual_account import (
-    get_virtual_accounts, create_virtual_account, mark_va_paid_manually,
-    cancel_va, BANK_CODES,
+from models.payment import (
+    create_payment,
+    get_payment_by_id,
+    get_payment_lines,
+    get_payments,
 )
-from models.bank_account import get_bank_accounts
-from models.audit import log_audit
-from bson import ObjectId
+from models.student import get_students
+from models.virtual_account import (
+    BANK_CODES,
+    cancel_va,
+    create_virtual_account,
+    get_virtual_accounts,
+    mark_va_paid_manually,
+)
+from routes.decorators import (
+    admin_required,
+    csrf_protect,
+    login_required,
+    validate_object_id,
+)
 
 bp = Blueprint("pembayaran", url_prefix="/pembayaran")
 

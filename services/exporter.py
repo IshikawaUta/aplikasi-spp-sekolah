@@ -1,6 +1,8 @@
 import io
+
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
+
 
 def create_workbook(title: str) -> Workbook:
     wb = Workbook()

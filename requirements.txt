@@ -1,0 +1,9 @@
+fenrir-framework>=4.1.2
+motor>=3.4.0
+python-dotenv>=1.0.0
+pymongo>=4.7.0
+bcrypt>=4.0.0
+openpyxl>=3.1.0
+pytest>=8.0.0
+pytest-cov>=5.0.0
+pytest-asyncio>=0.24.0

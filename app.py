@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 from fenrir import Fenrir, render_template, request, session, g
 from fenrir.middleware import CORSMiddleware
@@ -44,7 +44,7 @@ async def load_user():
             g.user = await g.db.user_profiles.find_one({"_id": ObjectId(user_id)})
         else:
             g.user = None
-    except Exception:
+    except Exception:  # noqa: BLE001
         g.db = None
         g.user = None
 
@@ -89,7 +89,7 @@ def _get_component_name(comp_id, comp_list):
 
 
 def _now():
-    return datetime.now()
+    return datetime.now(timezone.utc)
 
 
 def _escapejs(val):

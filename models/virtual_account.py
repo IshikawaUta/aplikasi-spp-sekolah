@@ -124,8 +124,7 @@ async def _create_xendit_va(data, amount, external_id, bank, student):
         "is_closed": True,
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=payload, headers=headers) as resp:
+    async with aiohttp.ClientSession() as session, session.post(url, json=payload, headers=headers) as resp:
             result = await resp.json()
 
     if resp.status >= 400:

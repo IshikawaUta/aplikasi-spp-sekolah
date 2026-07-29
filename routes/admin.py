@@ -26,7 +26,7 @@ async def pengguna_create():
         await create_user(data["email"], data["full_name"], data["password"], data.get("role", "kasir"))
         await log_audit(g.user["email"], "create", "user_profiles", None, None,
                         f"Created user {data['email']} with role {data.get('role', 'kasir')}")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return render_template("admin/pengguna.html.j2",
                                users=await get_users(),
                                error=str(e),

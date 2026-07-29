@@ -3,7 +3,7 @@ from bson import ObjectId
 from models.db import get_db, get_next_sequence
 
 
-async def get_payments(filters: dict = None) -> list:
+async def get_payments(filters: dict = None) -> list:  # noqa: RUF013
     db = await get_db()
     filt = filters or {}
     pipeline = [

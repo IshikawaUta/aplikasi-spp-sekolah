@@ -4,7 +4,7 @@ import pymongo.errors
 from models.db import get_db
 
 
-async def get_invoices(filters: dict = None) -> list:
+async def get_invoices(filters: dict = None) -> list:  # noqa: RUF013
     db = await get_db()
     filt = filters or {}
     pipeline = [

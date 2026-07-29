@@ -377,7 +377,7 @@ async def rekap_harian():
     if date_str:
         try:
             target_date = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        except Exception:
+        except Exception:  # noqa: BLE001
             target_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     else:
         target_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
